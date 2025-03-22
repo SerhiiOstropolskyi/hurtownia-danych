@@ -5,7 +5,7 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 
 # Ustawienie połączenia z bazą danych
-DATABASE_URI = "mysql+pymysql://user:password@localhost/hurtownia"
+DATABASE_URI = "mysql+pymysql://Sergiusz:Ost-MySQL123@localhost:3306/hurtownia"
 engine = create_engine(DATABASE_URI, echo=False)
 
 def query_db(query, params=None):
@@ -108,7 +108,7 @@ def get_sales_by_location(date_from=None, date_to=None):
 
 def get_customer_segmentation(date_from=None, date_to=None):
     """
-    Zaawansowana segmentacja klientów metodą RFM:
+    Segmentacja klientów metodą RFM:
     - Recency: liczba dni od ostatniego zakupu
     - Frequency: liczba transakcji
     - Monetary: suma przychodów
@@ -158,8 +158,8 @@ def get_dealsize_analysis(date_from=None, date_to=None):
         params = {"date_from": date_from, "date_to": date_to}
     query = f"""
     SELECT CASE 
-             WHEN order_quantity < 10 THEN 'Small'
-             WHEN order_quantity < 50 THEN 'Medium'
+             WHEN f.order_quantity < 10 THEN 'Small'
+             WHEN f.order_quantity < 20 THEN 'Medium'
              ELSE 'Large'
            END as dealsize_category,
            SUM(f.revenue) as total_sales
@@ -211,12 +211,12 @@ def get_top_category(date_from=None, date_to=None):
         where_clause = "WHERE d.date_key BETWEEN :date_from AND :date_to"
         params = {"date_from": date_from, "date_to": date_to}
     query = f"""
-    SELECT p.Product_Category as product_category, SUM(f.order_quantity) as total_quantity
+    SELECT p.product_category as product_category, SUM(f.order_quantity) as total_quantity
     FROM fact_sales f
     JOIN dim_product p ON f.product_id = p.product_id
     JOIN dim_date d ON f.date_key = d.date_key
     {where_clause}
-    GROUP BY p.Product_Category
+    GROUP BY p.product_category
     ORDER BY total_quantity DESC
     LIMIT 1;
     """
